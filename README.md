@@ -3,7 +3,7 @@
 
 Это универсальная библиотека терминала посредством последовательного порта для Arduino, предназначенная для разбора ASCII-команд и аргументов.
 
-![Снимок экрана 2024-06-09 185842](https://github.com/Alash-electronics/AlashSerialTerminal/assets/171731850/78c7727d-a0ac-46d6-9bb9-b65b22e8813f)
+![Снимок экрана 2024-06-09 185842](https://github.com/Alash-electronics/AlashSerialTerminal/assets/171731850/15fae77c-308b-484e-bcaa-c4d08d2a475a)
 
 
 ## Аппаратное обеспечение
