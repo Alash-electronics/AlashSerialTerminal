@@ -1,214 +1,167 @@
-# Библиотека терминала посредством последовательного порта для Arduino
-Библиотека была создана для образовательных целей компанией Alash education.
+# AlashSerialTerminal — Serial Terminal library for Arduino
 
-Это универсальная библиотека терминала посредством последовательного порта для Arduino, предназначенная для разбора ASCII-команд и аргументов.
+> 🌐 **English** | [Русский](README_ru.md)
 
-![Снимок экрана 2024-06-09 185842](https://github.com/Alash-electronics/AlashSerialTerminal/assets/171731850/15fae77c-308b-484e-bcaa-c4d08d2a475a)
+Built by Alash Education for educational use: a general-purpose serial terminal library for Arduino that parses ASCII commands and arguments coming in over a serial port.
 
+![screenshot](https://github.com/Alash-electronics/AlashSerialTerminal/assets/171731850/15fae77c-308b-484e-bcaa-c4d08d2a475a)
 
-## Аппаратное обеспечение
+## Hardware
 
-Любое аппаратное обеспечение Arduino с последовательным портом, такое как:
+Any Arduino-compatible board with a serial port, including:
 
 Arduino:
 * UNO
 * Nano
 * Micro
-* Pro или Pro Mini
-* Mega или Mega2560
+* Pro / Pro Mini
+* Mega / Mega2560
 * Leonardo
 
-Другие платформы:
+Other platforms:
 * DUE
 * ESP8266
 * ESP32
 * SAMD21
 * STM32F1
 
-Рекомендуем так же скачать библиотеку Alash Serial Terminal для работы с Терминалом https://github.com/Alash-electronics/AlashSerialTerminal
-## Использование
+## Usage
 
-**Инициализация**
+**Initialization**
 
-Создайте объект терминала посредством последовательного порта. Его можно инициализировать с необязательными символами новой строки и разделителями.
+Create a serial terminal object, optionally with a custom newline character and argument delimiter.
 
-Символ новой строки по умолчанию: ```'\n'```
-Символ разделителя по умолчанию: ```Пробел```
+Default newline: `'\n'`
+Default delimiter: `' '` (space)
 
-```c++
+```cpp
 #include <AlashSerialTerminal.h>
 
-// Символ новой строки '\r' или '\n'
-char newlineChar = '\n'; 
-// Символ-разделитель между командами и аргументами
+char newlineChar = '\n';
 char delimiterChar = ' ';
 
-// Создание объекта терминала посредством последовательного порта
 SerialTerminal term(newlineChar, delimiterChar);
 
-
-void setup()
-{
-    // Инициализация последовательного порта
-    Serial.begin(115200);
-    
-    // Инициализация встроенного светодиода
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
-}
-```
-**Регистрация новых команд**
-
-Команды должны быть зарегистрированы при запуске с соответствующим ```обработчиком обратного вызова```. Это регистрирует только команду, исключая аргументы.
-
-Обработчик обратного вызова будет вызван, когда команда будет получена, включая символ новой строки.
-
-Пример регистрации нескольких команд:
-
-```c++
-void setup()
-{
-    ...
-
-    // Добавление обработчиков обратного вызова команд
-    term.addCommand("?", cmdHelp);
-    term.addCommand("help", cmdHelp);
-    term.addCommand("on", cmdLedOn);
-    term.addCommand("off", cmdLedOff);
-}
-
-void cmdHelp()
-{
-    // Вывод использования
-    Serial.println(F("Использование серийного терминала:"));
-    Serial.println(F("  help или ?          Вывести это использование"));
-    Serial.println(F("  on                  Включить светодиод"));
-    Serial.println(F("  off                 Выключить светодиод"));
-}
-
-void cmdLedOn()
-{
-    // Включение светодиода
-    Serial.println(F("Светодиод включен"));
-    digitalWrite(LED_BUILTIN, HIGH);
-}
-
-void cmdLedOff()
-{
-    // Выключение светодиода
-    Serial.println(F("Светодиод выключен"));
-    digitalWrite(LED_BUILTIN, LOW);
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 ```
 
-**Установка обработчика по умолчанию**
+**Registering commands**
 
-Необязательно: Обработчик по умолчанию будет вызван, когда команда не распознана.
+Commands are registered at startup with a callback handler. Registration matches the command only — arguments are read separately. The callback fires once the full command, including the newline, has been received.
 
-```c++
-void setup()
-{   
-    ...
-
-    // Установка обработчика по умолчанию для неизвестных команд
-    term.setDefaultHandler(unknownCommand);
+```cpp
+void setup() {
+  ...
+  term.addCommand("?", cmdHelp);
+  term.addCommand("help", cmdHelp);
+  term.addCommand("on", cmdLedOn);
+  term.addCommand("off", cmdLedOff);
 }
 
-void unknownCommand(const char *command)
-{
-    // Вывод неизвестной команды
-    Serial.print(F("Неизвестная команда: "));
-    Serial.println(command);
+void cmdHelp() {
+  Serial.println(F("Serial terminal usage:"));
+  Serial.println(F("  help or ?           Show this help"));
+  Serial.println(F("  on                  Turn the LED on"));
+  Serial.println(F("  off                 Turn the LED off"));
 }
-```
 
-**Чтение из последовательного порта**
+void cmdLedOn() {
+  Serial.println(F("LED on"));
+  digitalWrite(LED_BUILTIN, HIGH);
+}
 
-Чтение из последовательного порта в основном цикле:
-
-```c++
-void loop()
-{
-    // Чтение из последовательного порта и обработка обратных вызовов команд
-    term.readSerial();
+void cmdLedOff() {
+  Serial.println(F("LED off"));
+  digitalWrite(LED_BUILTIN, LOW);
 }
 ```
 
-**Получение следующего аргумента**
+**Setting a default handler**
 
-Получение указателя на следующий аргумент в буфере приема последовательного порта:
+Optional: fires when a command isn't recognized.
 
-```c++
-char *arg;
+```cpp
+void setup() {
+  ...
+  term.setDefaultHandler(unknownCommand);
+}
 
-// Получение следующего аргумента
-arg = term.getNext();
+void unknownCommand(const char *command) {
+  Serial.print(F("Unknown command: "));
+  Serial.println(command);
+}
+```
+
+**Reading the serial port**
+
+```cpp
+void loop() {
+  term.readSerial();
+}
+```
+
+**Getting the next argument**
+
+```cpp
+char *arg = term.getNext();
 if (arg != NULL) {
-    Serial.print(F("Аргумент: "));
-    Serial.println(arg);
+  Serial.print(F("Argument: "));
+  Serial.println(arg);
 } else {
-    Serial.println(F("Нет аргумента"));
+  Serial.println(F("No argument"));
 }
 ```
 
-**Получение оставшихся символов**
+**Getting the remaining characters**
 
-Получение указателя на оставшиеся символы в буфере приема последовательного порта:
-
-```c++
-char *arg;
-
-// Получение оставшихся символов
-arg = term.getRemaining();
+```cpp
+char *arg = term.getRemaining();
 if (arg != NULL) {
-    Serial.print(F("Оставшиеся: "));
-    Serial.println(arg);
+  Serial.print(F("Remaining: "));
+  Serial.println(arg);
 }
 ```
 
-**Очистка буфера**
+**Clearing the buffer**
 
-Необязательно: Буфер приема последовательного порта можно очистить следующим вызовом:
-
-```c++
+```cpp
 term.clearBuffer();
 ```
 
+**Serial echo**
 
-**Включение/отключение эха символов**
+Optional: echoes typed characters back over serial — useful for terminal programs like PuTTY. Supports both Backspace and `^H`/`^127`.
 
-Необязательно: Разрешение вывода любых введенных символов обратно в интерфейс последовательного порта.
-Это полезно для терминальных программ, таких как PuTTY.
-Поддерживает оба символа "Backspace", ^H и ^127.
-
-```c++
-term.setSerialEcho(true); // Включение эха символов
+```cpp
+term.setSerialEcho(true);
 ```
 
+**Post-command handler**
 
-**Установка обработчика после команды**
+Optional: runs a function right after a command has been processed.
 
-Необязательно: Добавление функции, которая будет вызвана ПОСЛЕ обработки команды.
-
-```c++
-void setup()
-{   
-    ...
-
-    // Установка обработчика, который будет запущен ПОСЛЕ обработки команды.
-    term.setPostCommandHandler(postCommandHandler);
+```cpp
+void setup() {
+  ...
+  term.setPostCommandHandler(postCommandHandler);
 }
 
-void setPostCommandHandler()
-{
-    // Вывод '> ' для простого пользовательского интерфейса
-    Serial.print(F("> "));
+void postCommandHandler() {
+  Serial.print(F("> ")); // simple prompt
 }
 ```
 
-## Конфигурация библиотеки
+## Configuration
 
-```SerialTerminal.h``` содержит следующие макросы конфигурации:
+`SerialTerminal.h` exposes two configuration macros:
 
-* ```ST_RX_BUFFER_SIZE``` : Размер буфера приема по умолчанию для последовательного порта составляет 32 байта. Это включает в себя команду и аргументы, за исключением символа ```'\0'```.
-* ```ST_NUM_COMMAND_CHARS```: Количество символов команды по умолчанию составляет 8 байт, за исключением символа ```'\0'```.
+* `ST_RX_BUFFER_SIZE` — receive buffer size, default 32 bytes (command + arguments, excluding the terminating `'\0'`).
+* `ST_NUM_COMMAND_CHARS` — max command length, default 8 bytes (excluding `'\0'`).
+
+## Other Arduino libraries from Alash-electronics
+
+[github.com/Alash-electronics](https://github.com/Alash-electronics)
