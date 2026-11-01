@@ -6,6 +6,9 @@
 #include <AlashSerialTerminal.h>
 
 // Пин светодиода
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2   // ESP32 без встроенного LED в описании платы
+#endif
 #define LED_PIN     LED_BUILTIN
 
 // Символ новой строки '\r' или '\n'
